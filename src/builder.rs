@@ -2,7 +2,7 @@
 //!
 //! This adds ergonomic ways to create and render a pixel buffer.
 //! Alternatively [PixelBufferBundle] or
-//! [PixelBufferSpriteBundle](crate::bundle::PixelBufferSpriteBundle)
+//! [PixelBufferSprite](crate::bundle::PixelBufferSprite)
 //! can be used.
 
 use crate::{
@@ -256,28 +256,23 @@ fn create_pixel_buffer<'a>(
             } => {
                 // Spawn a 2D camera if needed
                 if spawn_camera {
-                    entity.commands().spawn(Camera2dBundle::default());
+                    entity.commands().spawn(Camera2d::default());
                 }
 
                 // Add a sprite with the image as texture
 
                 // this also adds a image_handle, but just replacing the existing one
                 // which is the same handle
-                let sprite_bundle = SpriteBundle {
-                    sprite: Sprite {
-                        custom_size: Some(size.screen_size().as_vec2()),
-                        color: sprite_bundle.sprite.color,
-                        flip_x: sprite_bundle.sprite.flip_x,
-                        flip_y: sprite_bundle.sprite.flip_y,
-                        anchor: sprite_bundle.sprite.anchor,
-                        rect: None,
-                    },
-                    texture: image.clone(),
-                    transform: sprite_bundle.transform,
-                    global_transform: sprite_bundle.global_transform,
-                    visibility: sprite_bundle.visibility,
-                    inherited_visibility: sprite_bundle.inherited_visibility,
-                    view_visibility: sprite_bundle.view_visibility,
+                let sprite_bundle = Sprite {
+                    custom_size: Some(size.screen_size().as_vec2()),
+                    color: sprite_bundle.sprite.color,
+                    flip_x: sprite_bundle.sprite.flip_x,
+                    flip_y: sprite_bundle.sprite.flip_y,
+                    anchor: sprite_bundle.sprite.anchor,
+                    rect: None,
+                    texture_atlas: None,
+                    image_mode: SpriteImageMode::Auto,
+                    image: image.clone(),
                 };
                 entity.insert(sprite_bundle);
             }
@@ -286,7 +281,7 @@ fn create_pixel_buffer<'a>(
 
     entity.insert(PixelBufferBundle {
         pixel_buffer: PixelBuffer { size, fill },
-        image: image.clone(),
+        image: Sprite::from_image(image.clone()),
     });
 
     PixelBufferCommands {

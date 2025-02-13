@@ -2,11 +2,9 @@
 
 use bevy::{
     app::PluginGroupBuilder,
+    image::ImageSampler,
     prelude::*,
-    render::{
-        render_resource::{Extent3d, TextureDescriptor, TextureDimension, TextureUsages},
-        texture::ImageSampler,
-    },
+    render::render_resource::{Extent3d, TextureDescriptor, TextureDimension, TextureUsages},
     window::PrimaryWindow,
 };
 
@@ -311,10 +309,7 @@ impl Plugin for PixelBufferPlugin {
 /// Keeps the size in [PixelBuffer] in sync with the size of the underlying image.
 #[allow(clippy::type_complexity)]
 fn resize(
-    pixel_buffer: Query<
-        (&Handle<Image>, &PixelBuffer),
-        Or<(Changed<PixelBuffer>, Added<Handle<Image>>)>,
-    >,
+    pixel_buffer: Query<(&Sprite, &PixelBuffer), Or<(Changed<PixelBuffer>, Added<Sprite>)>>,
     mut images: ResMut<Assets<Image>>,
 ) {
     for (image_handle, pb) in pixel_buffer.iter() {
@@ -326,10 +321,12 @@ fn resize(
             return;
         }
 
-        let image = images.get(image_handle).expect("pixel buffer image");
+        let image = images.get(&image_handle.image).expect("pixel buffer image");
 
         if size.size != image.size() {
-            let image = images.get_mut(image_handle).expect("pixel buffer image");
+            let image = images
+                .get_mut(&image_handle.image)
+                .expect("pixel buffer image");
 
             info!("Resizing image to: {:?}", size);
             image.resize(Extent3d {
@@ -398,7 +395,7 @@ pub(crate) fn get_fill_area(pb: &PixelBuffer, window: Option<&Window>) -> Option
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::bundle::{PixelBufferBundle, PixelBufferSpriteBundle};
+    use crate::bundle::{PixelBufferBundle, PixelBufferSprite};
 
     #[test]
     fn do_resize_image() {
@@ -425,16 +422,16 @@ mod tests {
                     size: PixelBufferSize::size(set_size),
                     fill: Fill::none(),
                 },
-                image,
+                image: Sprite::from_image(image.clone())
             })
             .id();
 
         app.update();
 
         let set_size = app.world().get::<PixelBuffer>(pb_id).unwrap().size.size;
-        let image_handle = app.world().get::<Handle<Image>>(pb_id).unwrap();
+        let image_handle = app.world().get::<Sprite>(pb_id).unwrap();
         let images = app.world().resource::<Assets<Image>>();
-        let image_size = images.get(image_handle).unwrap().size();
+        let image_size = images.get(&image_handle.image).unwrap().size();
 
         assert_eq!(set_size, image_size);
     }
@@ -456,19 +453,12 @@ mod tests {
 
         let pb_id = app
             .world_mut()
-            .spawn(PixelBufferSpriteBundle {
+            .spawn(PixelBufferSprite {
                 pixel_buffer: PixelBuffer {
                     size: PixelBufferSize::size(set_size),
                     fill: Fill::none(),
                 },
-                sprite_bundle: SpriteBundle {
-                    sprite: Sprite {
-                        custom_size: None,
-                        ..Default::default()
-                    },
-                    texture: image,
-                    ..Default::default()
-                },
+                sprite_bundle: Sprite::from_image(image),
             })
             .id();
 
@@ -504,7 +494,7 @@ mod tests {
                     size: PixelBufferSize::size(set_size),
                     fill: Fill::custom(fill_area),
                 },
-                image,
+                image: Sprite::from_image(image.clone()),
             })
             .id();
 

@@ -77,7 +77,7 @@ mod queries {
         /// [PixelBuffer] component
         pub pixel_buffer: &'static mut PixelBuffer,
         /// Image handle
-        pub image_handle: &'static Handle<Image>,
+        pub image_handle: &'static Sprite,
     }
 
     #[cfg(feature = "egui")]
@@ -92,7 +92,7 @@ mod queries {
         /// [PixelBuffer] component
         pub pixel_buffer: &'static mut PixelBuffer,
         /// Image handle
-        pub image_handle: &'static Handle<Image>,
+        pub image_handle: &'static Sprite,
         /// [EguiTexture](crate::egui::EguiTexture) component.
         ///
         /// Only available with the `egui` feature.
@@ -107,13 +107,13 @@ pub use queries::*;
 
 impl AsImageHandle for crate::query::PixelBuffersReadOnlyItem<'_> {
     fn as_image_handle(&self) -> &Handle<Image> {
-        self.image_handle
+        &self.image_handle.image
     }
 }
 
 impl AsImageHandle for crate::query::PixelBuffersItem<'_> {
     fn as_image_handle(&self) -> &Handle<Image> {
-        self.image_handle
+        &self.image_handle.image
     }
 }
 
@@ -156,6 +156,6 @@ impl<'w, 's> QueryPixelBuffer<'w, 's> {
 impl<'w, 's> GetFrame for QueryPixelBuffer<'w, 's> {
     fn frame(&mut self) -> Frame<'_> {
         let image_handle = self.query.single().image_handle;
-        Frame::extract(&mut self.images, image_handle)
+        Frame::extract(&mut self.images, &image_handle.image)
     }
 }

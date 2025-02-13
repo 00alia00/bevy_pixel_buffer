@@ -176,6 +176,7 @@ impl<S: ComputeShader> FromWorld for ComputeShaderPipeline<S> {
             shader_defs: vec![],
             entry_point,
             push_constant_ranges: vec![],
+            zero_initialize_workgroup_memory: true,
         });
 
         ComputeShaderPipeline {
@@ -221,7 +222,7 @@ impl<S: ComputeShader> Default for ExtractedShaders<S> {
 fn cs_extract<S: ComputeShader>(
     mut commands: Commands,
     mut previous_len: Local<usize>,
-    buffers: Extract<Query<(Entity, &Handle<Image>, &Handle<S>), With<PixelBuffer>>>,
+    buffers: Extract<Query<(Entity, &Sprite, &Handle<S>), With<PixelBuffer>>>,
     mut shader_events: Extract<EventReader<AssetEvent<S>>>,
     shader_assets: Extract<Res<Assets<S>>>,
     mut image_events: Extract<EventReader<AssetEvent<Image>>>,
@@ -299,7 +300,7 @@ struct PreparedImages<S>(HashMap<AssetId<Image>, PreparedImage<S>>);
 
 fn prepare_images<S: ComputeShader>(
     mut previous_len: Local<usize>,
-    buffers: Query<&Handle<Image>, With<Handle<S>>>,
+    buffers: Query<&Sprite, With<Handle<S>>>,
     render_device: Res<RenderDevice>,
     pipeline: Res<ComputeShaderPipeline<S>>,
     images: Res<RenderAssets<GpuImage>>,
@@ -381,6 +382,9 @@ fn prepare_shaders<S: ComputeShader>(
             Ok(prepared_asset) => {
                 render_materials.insert(handle_id, prepared_asset);
             }
+            Err(AsBindGroupError::InvalidSamplerType(_, _, _)) => {
+                error!("Invalid sampler type encountered while preparing shader.");
+            }
             Err(AsBindGroupError::RetryNextUpdate) => {
                 prepare_next_frame.assets.push((handle_id, shader));
             }
@@ -395,6 +399,9 @@ fn prepare_shaders<S: ComputeShader>(
         match prepare_shader(&shader, &render_device, &images, &fallback_image, &pipeline) {
             Ok(prepared_asset) => {
                 render_materials.insert(handle_id, prepared_asset);
+            }
+            Err(AsBindGroupError::InvalidSamplerType(_, _, _)) => {
+                error!("Invalid sampler type encountered while preparing shader.");
             }
             Err(AsBindGroupError::RetryNextUpdate) => {
                 prepare_next_frame.assets.push((handle_id, shader));
@@ -414,7 +421,7 @@ fn prepare_shader<S: ComputeShader>(
         &pipeline.user_bind_group_layout,
         render_device,
         images,
-        fallback_image,
+        // fallback_image,
     )?;
     Ok(PreparedShader {
         user_bind_group: prepared.bind_group,
@@ -432,7 +439,7 @@ struct ComputeShaderInfo {
 
 fn cs_queue_bind_group<S: ComputeShader>(
     mut commands: Commands,
-    buffers: Query<(&Handle<Image>, &Handle<S>)>,
+    buffers: Query<(&Sprite, &Handle<S>)>,
     prepared_shaders: Res<PreparedShaders<S>>,
     prepared_images: Res<PreparedImages<S>>,
     mut previous_len: Local<usize>,

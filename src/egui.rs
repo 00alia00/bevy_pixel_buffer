@@ -57,11 +57,11 @@ impl Plugin for PixelBufferEguiPlugin {
 fn register_egui(
     mut commands: Commands,
     mut egui_contexts: EguiContexts,
-    pixel_buffer: Query<(Entity, &PixelBuffer, &Handle<Image>), Added<Handle<Image>>>,
+    pixel_buffer: Query<(Entity, &PixelBuffer, &Sprite), Added<Sprite>>,
 ) {
     for (entity, pb, image_handle) in pixel_buffer.iter() {
         let texture = EguiTexture {
-            id: egui_contexts.add_image(image_handle.clone_weak()),
+            id: egui_contexts.add_image(image_handle.image.clone_weak()),
             size: pb.size.egui_texture_size(),
         };
         commands.entity(entity).insert(texture);

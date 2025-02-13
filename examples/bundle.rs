@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use bevy_pixel_buffer::{
-    bundle::PixelBufferSpriteBundle,
+    bundle::PixelBufferSprite,
     pixel_buffer::{create_image, CreateImageParams},
     prelude::*,
 };
@@ -21,12 +21,12 @@ fn setup(mut commands: Commands, mut images: ResMut<Assets<Image>>) {
         pixel_size: UVec2::new(16, 16),
     };
 
-    commands.spawn(PixelBufferSpriteBundle {
+    commands.spawn(PixelBufferSprite {
         pixel_buffer: PixelBuffer {
             size,
             fill: Fill::none(),
         },
-        sprite_bundle: SpriteBundle {
+        sprite_bundle: Sprite {
             //important, use `create_image`
             texture: images.add(create_image(CreateImageParams {
                 size: size.size,
