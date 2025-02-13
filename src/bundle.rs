@@ -20,25 +20,6 @@ pub struct PixelBufferBundle {
     /// Pixel buffer component.
     pub pixel_buffer: PixelBuffer,
     /// Image handle obtained with [create_image](crate::pixel_buffer::create_image).
-    pub image: Sprite,
+    pub sprite: Sprite,
 }
 
-/// [Bundle] to create a pixel buffer with a sprite manually.
-///
-/// Gives the possibility to insert the [Bundle] instead of
-/// abstracting it with [PixelBufferBuilder](crate::builder::PixelBufferBuilder).
-///
-/// [Sprite::texture] will be the image where the pixel buffer will be
-/// stored. To get a value for it use [create_image](crate::pixel_buffer::create_image) and
-/// add the image to the [Assets] to get a handle.
-///
-#[derive(Bundle)]
-pub struct PixelBufferSprite {
-    /// Pixel buffer component
-    pub pixel_buffer: PixelBuffer,
-    /// Sprite bundle to render the pixel buffer.
-    ///
-    /// [Sprite::texture] underlying image should be obtained from [create_image](crate::pixel_buffer::create_image).
-    /// [Sprite::custom_size] in [Sprite::sprite] will be ignored. To set a size modify [PixelBuffer::size].
-    pub sprite_bundle: Sprite,
-}

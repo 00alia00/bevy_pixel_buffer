@@ -395,7 +395,7 @@ pub(crate) fn get_fill_area(pb: &PixelBuffer, window: Option<&Window>) -> Option
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::bundle::{PixelBufferBundle, PixelBufferSprite};
+    use crate::bundle::PixelBufferBundle;
 
     #[test]
     fn do_resize_image() {
@@ -422,7 +422,7 @@ mod tests {
                     size: PixelBufferSize::size(set_size),
                     fill: Fill::none(),
                 },
-                image: Sprite::from_image(image.clone())
+                sprite: Sprite::from_image(image.clone())
             })
             .id();
 
@@ -453,12 +453,12 @@ mod tests {
 
         let pb_id = app
             .world_mut()
-            .spawn(PixelBufferSprite {
+            .spawn(PixelBufferBundle {
                 pixel_buffer: PixelBuffer {
                     size: PixelBufferSize::size(set_size),
                     fill: Fill::none(),
                 },
-                sprite_bundle: Sprite::from_image(image),
+                sprite: Sprite::from_image(image),
             })
             .id();
 
@@ -494,7 +494,7 @@ mod tests {
                     size: PixelBufferSize::size(set_size),
                     fill: Fill::custom(fill_area),
                 },
-                image: Sprite::from_image(image.clone()),
+                sprite: Sprite::from_image(image.clone()),
             })
             .id();
 

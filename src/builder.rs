@@ -281,7 +281,7 @@ fn create_pixel_buffer<'a>(
 
     entity.insert(PixelBufferBundle {
         pixel_buffer: PixelBuffer { size, fill },
-        image: Sprite::from_image(image.clone()),
+        sprite: Sprite::from_image(image.clone()),
     });
 
     PixelBufferCommands {
